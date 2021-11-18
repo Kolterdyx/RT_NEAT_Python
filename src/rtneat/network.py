@@ -1,6 +1,7 @@
 from .tags import *
 from .node import *
 from .link import *
+from .globals import *
 
 innovation = 0
 
@@ -29,9 +30,9 @@ class Network:
             node = Node(OUTPUT, get_innovation())
             self.nodes.append(node)
             self.onodes.append(node)
-            for n in self.inodes:
-                link = self.new_link(n, node)
-                self.links[link.innovation] = link
+            # for n in self.inodes:
+            #     link = self.new_link(n, node)
+            #     self.links[link.innovation] = link
 
 
 
@@ -40,24 +41,29 @@ class Network:
         if len(X) != self.ninputs:
             raise ValueError
 
+        for node in self.nodes:
+            node.input_values = []
+            node.activated = False
+
+        # Calculate input nodes
         for i,node in enumerate(self.inodes):
             node.input_values.append(X[i])
             node.calculate()
 
-        nodes_left = sum([node.activated for node in self.hnodes])
-
+        # Calculate hidden nodes
+        nodes_left = sum([not node.activated for node in self.hnodes])
         while nodes_left > 0:
             for node in self.hnodes:
                 for link in self.links.values():
                     if link.onode == node:
                         if link.inode.activated:
-                            if link.recur:
-                                node.input_values.append(link.inode.last_output_value*link.weight)
-                            else:
                                 node.input_values.append(link.inode.output_value*link.weight)
+                        elif link.recur:
+                            node.input_values.append(link.inode.last_output_value*link.weight)
                 node.calculate()
                 nodes_left -= 1
 
+        # Calculate output nodes
         for node in self.onodes:
             for link in self.links.values():
                 if link.onode == node:
@@ -108,11 +114,23 @@ class Network:
         link2 = self.new_link(node, old_node)
         self.links[link2.innovation] = link2
         self.hnodes.append(node)
+        self.nodes.append(node)
+        return node
 
-    def add_link(self):
-        if self.hnodes:
-            inode = random.choice(self.hnodes+self.inodes)
-            onode = random.choice(self.hnodes+self.onodes)
+    def add_link(self, link=None):
+        if not link:
+            if self.hnodes:
+                inode = random.choice(self.hnodes+self.inodes)
+                onode = random.choice(self.hnodes+self.onodes)
 
-            link = self.new_link(inode, onode)
+                link = self.new_link(inode, onode)
+                self.links[link.innovation] = link
+            else:
+                inode = random.choice(self.inodes)
+                onode = random.choice(self.onodes)
+
+
+                link = self.new_link(inode, onode)
+                self.links[link.innovation] = link
+        elif isinstance(link, Link):
             self.links[link.innovation] = link

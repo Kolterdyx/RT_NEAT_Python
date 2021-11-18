@@ -1,15 +1,21 @@
 from rtneat import *
-# random.seed(0)
+
+
+# log.setLevel(DEBUG)
+
+
+# random.seed(1)
 
 nn = Network(2, 1)
 
-nn.add_node()
-for i in range(5):
-    nn.add_link()
+nn.add_link(nn.new_link(nn.inodes[0], nn.onodes[0]))
 
-print(nn.links)
+node = nn.add_node()
 
-X = [-16, 5]
+nn.add_link(nn.new_link(nn.inodes[1], node))
 
-for i in range(5):
-    print(nn.feed(X))
+nn.add_link(nn.new_link(node, node))
+
+log.debug(nn.links)
+
+X = [-13, 5]

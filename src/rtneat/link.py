@@ -1,4 +1,5 @@
 import random
+from .globals import *
 
 class Link:
     def __init__(self, inode, onode, inn):
