@@ -22,11 +22,10 @@ class InnovationTracker():
             return False
         linkmap = zip(self.links.keys(), self.links.values())
         for inn, link in linkmap:
-            if link[0]==n1 and link[1]==n2:
+            if link[0] == n1 and link[1] == n2:
                 return [True, inn]
 
         return [False]
-
 
     def new_node(self):
         inn = self.new_innovation_number()
@@ -43,7 +42,7 @@ class InnovationTracker():
         return self.innovation
 
     def __str__(self):
-        return str(self.innovation)+" | "+str(self.nodes)+" | "+str(self.links)
+        return str(self.innovation) + " | " + str(self.nodes) + " | " + str(self.links)
 
     def serialize(self):
         data = {

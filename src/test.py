@@ -2,9 +2,10 @@ from rtneat import *
 from pprint import pprint
 import pickle
 
+
 class Entity:
-    def __init__(self, inn):
-        self.brain = Network(2,1,inn)
+    def __init__(self, inn, config):
+        self.brain = Network(2, 1, inn, config)
         self.brain.add_link()
         self.brain.add_link()
         self.brain.add_node()
@@ -13,7 +14,7 @@ class Entity:
     def input(self, X):
         for xi, xo in X:
             result = self.brain.feed(xi)[0]
-            self.fitness -= (result-xo)**2
+            self.fitness -= (result - xo) ** 2
 
     def __gt__(self, other):
         if isinstance(other, Entity):
@@ -38,9 +39,8 @@ class Entity:
         return str(self)
 
 
-
 def main():
-    log.setLevel(DEBUG)
+    # log.setLevel(DEBUG)
     # random.seed(1)
 
     xor = [
@@ -53,8 +53,9 @@ def main():
     X = [-32, 1.7]
 
     inn = InnovationTracker()
+    config = Config()
 
-    nn = Network(2, 1, inn)
+    nn = Network(2, 1, inn, config)
     nn.add_link()
     nn.add_link()
     nn.add_link()
@@ -75,20 +76,22 @@ def main():
     #
     # print(nn.feed(X))
 
-    # max_pop = 1
-    #
-    # pop = []
-    # for i in range(max_pop):
-    #     pop.append(Entity(inn))
-    #
-    # for e in pop:
-    #     e.input(xor)
-    #     # log.info(e.fitness)
-    #
-    # pop = sorted(pop)
-    # pop.reverse()
-    #
-    # survivors = pop[:int(max_pop/2)]
+    max_pop = 25
+
+    pop = []
+    for i in range(max_pop):
+        pop.append(Entity(inn, config))
+
+    for e in pop:
+        e.input(xor)
+        # log.info(e.fitness)
+
+    pop = sorted(pop)
+    pop.reverse()
+
+    survivors = pop[:int(max_pop / 2)]
+
+    print(survivors)
 
 
 if __name__ == '__main__':

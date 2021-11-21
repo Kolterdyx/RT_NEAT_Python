@@ -4,3 +4,4 @@ from .network import *
 from .link import *
 from .globals import *
 from .innovation import *
+from .config import *

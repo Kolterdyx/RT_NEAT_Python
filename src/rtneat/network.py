@@ -1,13 +1,12 @@
 from .globals import *
-from .innovation import *
-from .link import *
-from .node import *
-
-
+from .innovation import InnovationTracker
+from .link import Link
+from .node import Node
+from .config import Config
 
 
 class Network:
-    def __init__(self, ninputs: int, noutputs: int, innovationtracker: InnovationTracker):
+    def __init__(self, ninputs: int, noutputs: int, innovationtracker: InnovationTracker, config: Config):
         self.nodes = {}
         self.inodes = []
         self.onodes = []
@@ -15,6 +14,8 @@ class Network:
         self.ninputs = ninputs
         self.noutputs = noutputs
         self.inn = innovationtracker
+
+        self.config = config
 
         self.links = {}
 
@@ -149,7 +150,9 @@ class Network:
     def serialize(self):
         data = {
             "nodes": {},
-            "links": {}
+            "links": {},
+            "config": self.config.serialize(),
+            "innovation_tracker": self.inn.serialize()
         }
 
         for node in self.nodes.values():
@@ -159,8 +162,6 @@ class Network:
         for link in self.links.values():
             inn, link_data = link.serialize()
             data["links"][inn] = link_data
-
-        data["innovation_tracker"] = self.inn.serialize()
 
         return data
 
@@ -174,6 +175,7 @@ class Network:
 
         node_dict = data["nodes"]
         link_dict = data["links"]
+        self.config.deserialize(data["config"])
         self.inn.deserialize(data["innovation_tracker"])
 
         for inn, ntype in zip(node_dict.keys(), node_dict.values()):
@@ -213,7 +215,5 @@ class Network:
         with open(filename, 'rb') as f:
             self.deserialize(pickle.load(f))
 
-
     def __str__(self):
-        return str(self.links)+"\n"+str(self.nodes)
-
+        return str(self.links) + "\n" + str(self.nodes)
