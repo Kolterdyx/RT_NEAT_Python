@@ -10,7 +10,7 @@ class Node:
         self.activated = False
         self.innovation = inn
 
-    def calculate(self):
+    def activate(self):
         self.output_value = sigmoid(sum(self.input_values))  # if self.ntype != INPUT else sum(self.input_values)
         self.last_output_value = self.output_value
         self.activated = True

@@ -1,8 +1,6 @@
 import logging
 import random
 import numpy as np
-
-from .network import Network
 from .tags import *
 
 FORMAT = '%(levelname)s [%(asctime)s] %(message)s'
@@ -11,7 +9,7 @@ log = logging.getLogger(__name__)
 log.setLevel(INFO)
 
 
-def genetic_distance(net1: Network, net2: Network):
+def genetic_comparison(net1, net2):
     net1_data = net1.serialize()
     net2_data = net2.serialize()
     nodes1 = list(net1_data["nodes"].values())
@@ -23,13 +21,23 @@ def genetic_distance(net1: Network, net2: Network):
     links2inns = sorted(list(links2.keys()))
 
     matching = {}
+    disjoint = {}
+    excess = {}
+
+    print(links1inns)
+    print(links2inns)
+
     for a,b in zip(links1inns, links2inns):
         if a==b:
             matching[a] = links1[a]
             links1inns.remove(a)
             links2inns.remove(b)
 
+    print(links1inns)
+    print(links2inns)
 
 
-def crossover(net1: Network, net2: Network):
+
+
+def crossover(net1, net2):
     pass

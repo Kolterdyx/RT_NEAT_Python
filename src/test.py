@@ -2,6 +2,8 @@ from rtneat import *
 from pprint import pprint
 import pickle
 
+from rtneat import Config
+
 
 class Entity:
     def __init__(self, inn, config):
@@ -41,40 +43,53 @@ class Entity:
 
 def main():
     # log.setLevel(DEBUG)
-    # random.seed(1)
+    random.seed(2)
+    test_net()
+    # evolve_xor()
 
+
+def test_net():
+    X = [-32, 1.7]
+
+    inn = InnovationTracker()
+    cfg = Config()
+
+    nn1 = Network(2, 1, inn, cfg)
+    nn1.add_link()
+
+    nn2 = Network(2, 1, inn, cfg)
+    nn2.add_link()
+    nn2.add_link()
+
+
+    nn1.add_node()
+    nn2.add_node()
+
+
+
+    # log.info(nn1.feed(X))
+    # log.info(nn1.feed(X))
+    # log.info(nn1.feed(X))
+    # log.info(nn1.links)
+
+
+
+    # log.info(nn2.feed(X))
+    # log.info(nn2.feed(X))
+    # log.info(nn2.feed(X))
+    # log.info(nn2.links)
+
+    nn1.export_json("nn1.json")
+    nn2.export_json("nn2.json")
+
+
+def evolve_xor():
     xor = [
         ((0.0, 0.0), 0.0),
         ((0.0, 1.0), 1.0),
         ((1.0, 0.0), 1.0),
         ((0.0, 0.0), 0.0)
     ]
-
-    X = [-32, 1.7]
-
-    inn = InnovationTracker()
-    config = Config()
-
-    nn = Network(2, 1, inn, config)
-    nn.add_link()
-    nn.add_link()
-    nn.add_link()
-    nn.add_link()
-    nn.add_link()
-    nn.add_node()
-
-    log.info(nn.feed(X))
-    #
-    # nn.export_json("model.json")
-    # nn.export_pickle("model.pickle")
-    #
-    # nn.import_pickle("model.pickle")
-    #
-    # print(nn.feed(X))
-    #
-    # nn.import_json("model.json")
-    #
-    # print(nn.feed(X))
 
     max_pop = 25
 

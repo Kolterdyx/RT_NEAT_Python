@@ -19,15 +19,22 @@ class Network:
 
         self.links = {}
 
+        self.initial_nodes_inn = -1-ninputs-noutputs
+
         for i in range(ninputs):
-            node = Node(INPUT, self.inn.new_node())
+            node = Node(INPUT, self.new_initial_node())
             self.nodes[node.innovation] = node
             self.inodes.append(node)
 
         for i in range(noutputs):
-            node = Node(OUTPUT, self.inn.new_node())
+            node = Node(OUTPUT, self.new_initial_node())
             self.nodes[node.innovation] = node
             self.onodes.append(node)
+
+    def new_initial_node(self):
+        self.initial_nodes_inn += 1
+        self.inn.nodes.append(self.initial_nodes_inn) if self.initial_nodes_inn not in self.inn.nodes else None
+        return self.initial_nodes_inn
 
     def feed(self, input_values: list):
         if len(input_values) != self.ninputs:
@@ -40,7 +47,7 @@ class Network:
         # Calculate input nodes
         for i, node in enumerate(self.inodes):
             node.input_values.append(input_values[i])
-            node.calculate()
+            node.activate()
 
         # Calculate hidden nodes
         nodes_left = sum([not node.activated for node in self.hnodes])
@@ -53,8 +60,10 @@ class Network:
                                 node.input_values.append(link.inode.output_value * link.weight)
                             elif link.recur:
                                 node.input_values.append(link.inode.last_output_value * link.weight)
-                node.calculate()
-                nodes_left -= 1
+
+                if not node.activated:
+                    node.activate()
+                    nodes_left -= 1
 
         # Calculate output nodes
         for node in self.onodes:
@@ -62,7 +71,7 @@ class Network:
                 if link.onode == node:
                     node.input_values.append(link.inode.output_value * link.weight)
 
-            node.calculate()
+            node.activate()
 
         return [node.output_value for node in self.onodes]
 
@@ -97,10 +106,18 @@ class Network:
             if n == 0:
                 return False
 
+    def exists_link(self, inode: Node, onode: Node):
+        for link in self.links.values():
+            if link.inode == inode and link.onode == onode:
+                return True, link
+        return False, None
+
     def new_link(self, inode: Node, onode: Node):
-        for existing_link in self.links.values():
-            if existing_link.inode == inode and existing_link.onode == onode:
-                return existing_link
+        link_exists, link = self.exists_link(inode, onode)
+        if link_exists:
+            if not link.enabled:
+                link.enabled = True
+                return link
 
         link_check = self.inn.link_exists_between(inode.innovation, onode.innovation)
         if link_check[0]:
@@ -112,11 +129,46 @@ class Network:
             link.recur = True
         return link
 
+    def add_link(self, link: Link = None):
+        if not link:
+            if self.hnodes:
+                inode = random.choice(self.hnodes + self.inodes)
+                onode = random.choice(self.hnodes + self.onodes)
+
+                link_exists, existing_link = self.exists_link(inode, onode)
+                while link_exists:
+                    if not existing_link.enabled:
+                        break
+                    inode = random.choice(self.hnodes + self.inodes)
+                    onode = random.choice(self.hnodes + self.onodes)
+                    link_exists, existing_link = self.exists_link(inode, onode)
+
+                link = self.new_link(inode, onode)
+                self.links[link.innovation] = link
+            else:
+                inode = random.choice(self.inodes)
+                onode = random.choice(self.onodes)
+
+                link_exists, existing_link = self.exists_link(inode, onode)
+                while link_exists:
+                    if not existing_link.enabled:
+                        break
+                    inode = random.choice(self.inodes)
+                    onode = random.choice(self.onodes)
+                    link_exists, existing_link = self.exists_link(inode, onode)
+
+                link = self.new_link(inode, onode)
+                self.links[link.innovation] = link
+        elif isinstance(link, Link):
+            self.links[link.innovation] = link
+
     def add_node(self):
 
         old_link = random.choice(list(self.links.values()))
+        while not old_link.enabled:
+            old_link = random.choice(list(self.links.values()))
         old_link.enabled = False
-        node_check = self.inn.node_exists_between(old_link.inode.innovation, old_link.onode.innovation)
+        node_check = self.inn.node_splits_link(old_link.innovation)
         if node_check[0]:
             node = Node(HIDDEN, node_check[1])
         else:
@@ -129,23 +181,6 @@ class Network:
         self.hnodes.append(node)
         self.nodes[node.innovation] = node
         return node
-
-    def add_link(self, link: Link = None):
-        if not link:
-            if self.hnodes:
-                inode = random.choice(self.hnodes + self.inodes)
-                onode = random.choice(self.hnodes + self.onodes)
-
-                link = self.new_link(inode, onode)
-                self.links[link.innovation] = link
-            else:
-                inode = random.choice(self.inodes)
-                onode = random.choice(self.onodes)
-
-                link = self.new_link(inode, onode)
-                self.links[link.innovation] = link
-        elif isinstance(link, Link):
-            self.links[link.innovation] = link
 
     def serialize(self):
         data = {
